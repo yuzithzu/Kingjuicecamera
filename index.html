@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Checking King Juice</title>
+  <style>
+    body {
+      background-color: black;
+      font-family: 'Courier New', monospace;
+      color: lime;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 28px;
+      color: red;
+    }
+
+    #camera {
+      width: 80%;
+      max-width: 600px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    #capture {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #capture:hover {
+      background-color: #0056b3;
+    }
+
+    #photo {
+      max-width: 80%;
+      display: none;
+      margin: 20px auto;
+    }
+
+    #time {
+      margin-top: 10px;
+      font-size: 16px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Checking King Juice</h1>
+  
+  <video id="camera" autoplay playsinline></video>
+  <button id="capture">Capture Photo</button>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <img id="photo">
+  <p id="time"></p>
+
+  <script>
+    const video = document.getElementById('camera');
+    const canvas = document.getElementById('canvas');
+    const photo = document.getElementById('photo');
+    const captureButton = document.getElementById('capture');
+    const timeDisplay = document.getElementById('time');
+
+    // Access the camera stream
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then((stream) => {
+        video.srcObject = stream;
+      })
+      .catch((error) => {
+        console.error('Error accessing camera:', error);
+      });
+
+    // Capture photo and display time and date
+    captureButton.addEventListener('click', () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Get current time and date
+      const currentTime = new Date();
+      const timeString = currentTime.toLocaleTimeString();
+      const dateString = currentTime.toLocaleDateString();
+
+      // Display time and date
+      timeDisplay.textContent = `Captured on ${dateString} at ${timeString}`;
+
+      // Display captured photo
+      photo.src = canvas.toDataURL('image/png');
+      photo.style.display = 'block';
+      timeDisplay.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
