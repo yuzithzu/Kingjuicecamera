@@ -40,6 +40,34 @@
       background-color: #0056b3;
     }
 
+    #switch-camera {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #gps {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #gps-info {
+      margin-top: 10px;
+      font-size: 16px;
+      color: white;
+    }
+
     #photo {
       max-width: 80%;
       display: none;
@@ -58,25 +86,39 @@
   
   <video id="camera" autoplay playsinline></video>
   <button id="capture">Capture Photo</button>
+  <button id="switch-camera">Switch Camera</button>
+  <button id="gps">Use GPS</button>
+  <div id="gps-info"></div>
   <canvas id="canvas" style="display:none;"></canvas>
   <img id="photo">
   <p id="time"></p>
 
   <script>
+    let currentStream;
     const video = document.getElementById('camera');
     const canvas = document.getElementById('canvas');
     const photo = document.getElementById('photo');
     const captureButton = document.getElementById('capture');
+    const switchCameraButton = document.getElementById('switch-camera');
+    const gpsButton = document.getElementById('gps');
+    const gpsInfo = document.getElementById('gps-info');
     const timeDisplay = document.getElementById('time');
 
     // Access the camera stream
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then((stream) => {
-        video.srcObject = stream;
-      })
-      .catch((error) => {
-        console.error('Error accessing camera:', error);
-      });
+    function accessCamera(cameraFacing) {
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+      }
+      
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: cameraFacing } })
+        .then((stream) => {
+          currentStream = stream;
+          video.srcObject = stream;
+        })
+        .catch((error) => {
+          console.error('Error accessing camera:', error);
+        });
+    }
 
     // Capture photo and display time and date
     captureButton.addEventListener('click', () => {
@@ -97,6 +139,30 @@
       photo.style.display = 'block';
       timeDisplay.style.display = 'block';
     });
+
+    // Switch between front and back cameras
+    let currentFacing = 'environment'; // 'user' for front camera
+    switchCameraButton.addEventListener('click', () => {
+      currentFacing = (currentFacing === 'environment') ? 'user' : 'environment';
+      accessCamera(currentFacing);
+    });
+
+    // Use GPS to show latitude and longitude
+    gpsButton.addEventListener('click', () => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          gpsInfo.textContent = `Latitude: ${latitude}, Longitude: ${longitude}`;
+        },
+        (error) => {
+          console.error('Error accessing GPS:', error);
+          gpsInfo.textContent = 'Error accessing GPS.';
+        }
+      );
+    });
+
+    // Initial camera access
+    accessCamera(currentFacing);
   </script>
 </body>
 </html>
